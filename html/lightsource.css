@@ -1,0 +1,33 @@
+.table-borderless > tbody > tr > td,
+.table-borderless > tbody > tr > th,
+.table-borderless > tfoot > tr > td,
+.table-borderless > tfoot > tr > th,
+.table-borderless > thead > tr > td,
+.table-borderless > thead > tr > th {
+    border: none;
+}
+
+.table-xtra-condensed > thead > tr > th,
+.table-xtra-condensed > tbody > tr > th,
+.table-xtra-condensed > tfoot > tr > th,
+.table-xtra-condensed > thead > tr > td,
+.table-xtra-condensed > tbody > tr > td,
+.table-xtra-condensed > tfoot > tr > td {
+    padding: 2px;
+}
+
+.colorpicker-2x .colorpicker-saturation {
+    width: 200px;
+    height: 200px;
+}
+
+.colorpicker-2x .colorpicker-hue,
+.colorpicker-2x .colorpicker-alpha {
+    width: 30px;
+    height: 200px;
+}
+
+.colorpicker-2x .colorpicker-color,
+.colorpicker-2x .colorpicker-color div {
+    height: 30px;
+}

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lightsource</title>
+
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <!-- build:css style.css -->
+    <link href="lightsource.css" rel="stylesheet">
+    <!-- endbuild -->
+</head>
+
+<body>
+    <script id="lightsource-strip-template" type="text/x-jsrender">
+
+            <table class="table table-xtra-condensed table-borderless"
+				stripIndex="{{:~n}}">
+            <thead>
+            <tr class="active">
+                <th>Pin</th>
+                <th>Name</th>
+                <th>Color</th>
+                <th>Type</th>
+                <th>Length</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr>
+                <td>
+                    <input name="strips[{{:~n}}][]" type="number"
+						class="form-control input-sm" min="0" max="255"
+						value="{{:strip[0]}}">
+                </td>
+                <td>
+                    <input name="strips[{{:~n}}][]" type="text"
+						class="form-control input-sm"
+						maxlength="32" value="{{:strip[1]}}">
+                </td>
+                <td>
+                    <input name="strips[{{:~n}}][]" type="color"
+						class="form-control"
+						value="{{:strip[2]}}" >
+                </td>
+                <td>
+                    <input name="strips[{{:~n}}][]" type="text"
+						size="4" maxlength="4"
+						class="form-control input-sm" value="{{:strip[3]}}">
+                </td>
+                <td>
+                    <input name="strips[{{:~n}}][]" type="number"
+						class="form-control input-sm"
+						min="0" max="255" value="{{:strip[4]}}">
+                </td>
+
+                <td class="pull-right">
+                    <button class="btn btn-sm btn-danger" type="button"
+						onClick="removeStrip(this)">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
+                </td>
+                </tr>
+                </tbody>
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Name</th>
+                    <th>Color</th>
+                    <th>Start</th>
+                    <th>End</th>
+                </thead>
+                </tr>
+                <tbody>
+                    {{for strip[5] itemVar="~slice" tmpl="lightsource-slice-template"}}
+                    {{/for}}
+
+                    <tr>
+                        <th class="pull-right">
+                            <button class="btn btn-sm btn-success btn-add"
+							 	type="button"
+								stripIndex="{{:~n}}"
+								onClick="addSlice(this)">
+                                <span class="glyphicon glyphicon-plus"></span>
+                            </button>
+                        </th>
+                    </tr>
+                </tbody>
+        </table>
+
+    </script>
+    <script id="lightsource-slice-template" type="text/x-jsrender">
+                <tr sliceIndex="{{:~getSliceIndex(#index)}}">
+                    <td class="pull-right">
+                        <button class="btn btn-sm btn-danger"
+							type="button" onClick="removeSlice(this)">
+                            <span class="glyphicon glyphicon-remove"></span>
+                        </button>
+                    </td>
+                    <td>
+                        <input name="strips[{{:~n}}][5][{{:~getSliceIndex(#index)}}][]"
+							type="text" class="form-control input-sm"
+							value="{{:~slice[0]}}" />
+                    </td>
+                    <td>
+                        <input name="strips[{{:~n}}][5][{{:~getSliceIndex(#index)}}][]"
+							type="color" class="form-control"
+							value="{{:~slice[1]}}" />
+                    </td>
+                    <td>
+                        <input name="strips[{{:~n}}][5][{{:~getSliceIndex(#index)}}][]"
+							type="number" class="form-control input-sm"
+							min="0" max="255" value="{{:~slice[2]}}">
+                    </td>
+                    <td>
+                        <input name="strips[{{:~n}}][5][{{:~getSliceIndex(#index)}}][]"
+							type="number" class="form-control input-sm"
+							min="0" max="255" value="{{:~slice[3]}}">
+                    </td>
+                </tr>
+    </script>
+
+    <div class="container">
+
+        <div class="row">
+            <h2 class="text-muted">Lightsource config</h2>
+        </div>
+
+        <div class="row">
+			<table class="table table-xtra-condensed table-borderless">
+				<thead>
+					<th>
+						Load an existing program
+					</th>
+					<th>
+						Current program
+					</th>
+					<th>
+						Test or set
+					</th>
+				</thead>
+				<tbody>
+					<tr>
+						<td>
+							<select class="form-control input-sm"
+								id="lightsource-program-list"
+								onchange="existingProgramSelected(this)">
+							</select>
+						</td>
+						<td>
+							<input type="text" size="32" id="currentProgramName"
+								class="form-control input-sm" maxlength="32" />
+						</td>
+						<td>
+							<button title="Test program"
+								class="btn btn-sm btn-default lightsource-test-program"
+								type="button">
+                				<span class="glyphicon glyphicon-check"></span>
+            				</button>
+							<button title="Set program as current"
+								class="btn btn-sm btn-primary lightsource-write-program"
+								type="button">
+                				<span class="glyphicon glyphicon-cloud-upload"></span>
+            				</button>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3">
+							<span class="label label-default" style="margin-right:10px">
+								Remote info
+							</span>
+							<span class="label label-default" id="lightsource-notifier">
+							</span>
+						</td>
+					</tr>
+				</tbody>
+		</table>
+    </div>
+
+    <div class="row">
+		<button title="Add a led strip" class="btn btn-sm btn-success btn-add"
+			type="button" onClick="addStrip(this)">
+			<span class="glyphicon glyphicon-plus"></span>
+		</button>
+		<p />
+        <form role="form" autocomplete="off" id="lightsource-config-form">
+        </form>
+    </div>
+</div>
+
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/0.9.84/jsrender.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- build:js script.js -->
+    <script src="jsonrpc.js"></script>
+    <script src="object.min.js"></script>
+    <script src="lightsource.js"></script>
+    <!-- endbuild -->
+</body>
+</html>
