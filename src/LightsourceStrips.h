@@ -17,11 +17,12 @@ class LightsourceStrips
     	LightsourceStrips(){}
     	~LightsourceStrips(){}
     	void begin();
-		void applyConfig(String path);
+		bool applyConfig(String path);
+		bool applyConfig(const JsonVariant &programData);
 		bool updateProgram(JsonObject &programData, String programName="default");
 
 	private:
-
+		static String getFileForProgram(const String &programName);
     	Adafruit_NeoPixel pixelStrips[6];
 };
 #endif

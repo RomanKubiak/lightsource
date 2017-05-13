@@ -20,6 +20,7 @@
 #define	NTP_TIMEZONE		2
 #define DBG_OUTPUT_PORT   	Serial
 #define DBG(...)          	DBG_OUTPUT_PORT.printf( __VA_ARGS__ )
+#define _STR(x)				String(x)
 
 String getFileContents(String path);
 bool writeFileWithContents(String file, String contents);

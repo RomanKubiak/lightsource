@@ -10,7 +10,7 @@ static int lastYield = 0;
 String getFileContents(String path)
 {
   DBG("> getFileContents(%s)\n", path.c_str());
-  String allData = "{file: \"no data\"}";
+  String allData;
   SPIFFS.begin();
   {
     DBG("> getFileContents(%s) SPIFFS.begin\n", path.c_str());

@@ -18,31 +18,45 @@ void LightsourceRpc::process(ESP8266WebServer &srv)
   		srv.send(200, JSON_CONTENT_TYPE, testProgram(jsonRpcRequest));
 	if (strcmp(jsonRpcRequest["method"], "lightsource.writeProgram") == 0)
 		srv.send(200, JSON_CONTENT_TYPE, writeProgram(jsonRpcRequest));
-	if (strcmp(jsonRpcRequest["method"], "lightsource.writeDefaultProgram") == 0)
-		srv.send(200, JSON_CONTENT_TYPE, writeDefaultProgram(jsonRpcRequest));
+	if (strcmp(jsonRpcRequest["method"], "lightsource.programList") == 0)
+		srv.send(200, JSON_CONTENT_TYPE, programList(jsonRpcRequest));
 	else
 		srv.send(200, JSON_CONTENT_TYPE, error(jsonRpcRequest["id"], -1, "Unknown metod"));
 }
 
 String LightsourceRpc::init(JsonObject &request)
 {
-	String configString = getFileContents("/default.json");
+	String configString;
+
+	if (request["params"].size() <= 0)
+		configString = getFileContents("/default.json");
+	else if (request["params"].size() == 1)
+		configString = getFileContents(_STR("/")+_STR((const char *)request["params"][0])+_STR(".json"));
+	else
+		return (error(request["id"], -3, "Invalid number of request parameters"));
 
 	if (configString.length() > 0)
 		return (success(request["id"], configString));
 	else
-		return (error(request["id"], -2, "config.json file read failed, init defaults"));
+		return (error(request["id"], -2, "Program file read failed, init defaults"));
 }
 
-String LightsourceRpc::testProgram( JsonObject &request)
+String LightsourceRpc::testProgram(JsonObject &request)
 {
-	return (success(request["id"]));
+	DBG("> LightsourceRpc::testProgram\n");
+	request.printTo(Serial);
+	if (lightsourceStrips.applyConfig((const JsonVariant &)request["params"]))
+		return (success(request["id"]));
+	else
+		return (error(request["id"], -4, "Can't test program"));
 }
 
-String LightsourceRpc::writeDefaultProgram( JsonObject &request)
+String LightsourceRpc::programList(JsonObject &request)
 {
-	if (lightsourceStrips.updateProgram(request,"default"))
-  		return (success(request["id"]));
+	String programs = getFileContents("/programs.json");
+
+	if (programs.length() > 0)
+  		return (success(request["id"], programs));
 	else
 		return (error(request["id"]));
 }
@@ -63,6 +77,7 @@ String LightsourceRpc::success(int id, String response)
 String LightsourceRpc::error(int id, int code, String message)
 {
 	return (JSONRPC_PREFIX(id) +
-		"\"error\": [\"code\":"+
-		String(code)+", \"message\": \""+message+"\"]}");
+		"\"error\": {\"code\": "
+		+ String(code)
+		+ ", \"message\": \""+message+"\"} }");
 }

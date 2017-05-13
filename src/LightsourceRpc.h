@@ -15,7 +15,7 @@ class LightsourceRpc
 		void process(ESP8266WebServer &srv);
 		String init(JsonObject &request);
 		String testProgram(JsonObject &request);
-		String writeDefaultProgram(JsonObject &request);
+		String programList(JsonObject &request);
 		String writeProgram(JsonObject &request);
 	private:
 		LightsourceStrips lightsourceStrips;

@@ -5,11 +5,16 @@ void LightsourceStrips::begin()
 	DBG("LightsourceStrips::begin> \n");
 }
 
-void LightsourceStrips::applyConfig(String path)
+bool LightsourceStrips::applyConfig(const JsonVariant &programData)
+{
+	return (applyConfig(getFileForProgram(programData[0])));
+}
+
+bool LightsourceStrips::applyConfig(String path)
 {
 	DBG("LightsourceStrips::applyConfig> \n");
 	StaticJsonBuffer<2048> jsonBuffer;
-	String configString = getFileContents("/config.json");
+	String configString = getFileContents(path);
 	JsonArray& jsonConfig = jsonBuffer.parseArray(configString);
 
 	if (jsonConfig.success())
@@ -45,6 +50,8 @@ void LightsourceStrips::applyConfig(String path)
 	{
 		DBG("LightsourceStrips::applyConfig> json config failed to load: \n%s\n", configString.c_str());
 	}
+
+	return (true);
 }
 
 bool LightsourceStrips::updateProgram(JsonObject &programData, String programName)
@@ -80,4 +87,10 @@ bool LightsourceStrips::updateProgram(JsonObject &programData, String programNam
 		return (true);
 	}
 	return (false);
+}
+
+String LightsourceStrips::getFileForProgram(const String &programName)
+{
+	DBG("> LightsourceStrips::getFileForProgram %s", programName.c_str());
+	return ("");
 }
