@@ -9,18 +9,22 @@ static int lastYield = 0;
 
 String getFileContents(String path)
 {
-  DBG("> getFileContents(%s)\n", path.c_str());
   String allData;
   SPIFFS.begin();
   {
-    DBG("> getFileContents(%s) SPIFFS.begin\n", path.c_str());
     if (SPIFFS.exists(path))
     {
-      DBG("> getFileContents(%s) try to open\n", path.c_str());
-      File file = SPIFFS.open(path, "r");
-      DBG("> getFileContents(%s) SPIFFS.exists/open, size: %d\n", path.c_str(), file.size());
-      allData = file.readStringUntil(EOF);
-      file.close();
+    	File file = SPIFFS.open(path, "r");
+		if (file)
+		{
+      		DBG("> getFileContents(%s) SPIFFS.exists/open, size: %d\n", path.c_str(), file.size());
+      		allData = file.readStringUntil(EOF);
+      		file.close();
+		}
+		else
+		{
+			DBG("> getFileContents(%s) can't open file\n", path.c_str());
+		}
     }
     else
     {

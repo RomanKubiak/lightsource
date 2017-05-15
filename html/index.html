@@ -29,9 +29,20 @@
             <tbody>
                 <tr>
                 <td>
-                    <input name="strips[{{:~n}}][]" type="number"
-						class="form-control input-sm" min="0" max="255"
-						value="{{:strip[0]}}">
+					<select
+						class="form-control input-sm"
+						name="strips[{{:~n}}][]">
+
+						{{props ~esppins ~stripPin=strip[0]}}
+							<option value="{{>prop}}"
+							{{if ~stripPin == prop}}
+								selected
+							{{/if}} >
+								{{>key}}
+							</option>
+						{{/props}}
+
+					</select>
                 </td>
                 <td>
                     <input name="strips[{{:~n}}][]" type="text"
@@ -40,13 +51,26 @@
                 </td>
                 <td>
                     <input name="strips[{{:~n}}][]" type="color"
-						class="form-control"
+						class="form-control input-sm"
+						style="padding:0px"
 						value="{{:strip[2]}}" >
                 </td>
                 <td>
-                    <input name="strips[{{:~n}}][]" type="text"
-						size="4" maxlength="4"
-						class="form-control input-sm" value="{{:strip[3]}}">
+					<select
+						class="form-control input-sm"
+						name="strips[{{:~n}}][]">
+
+						{{for ~neotypes ~stripType=strip[3]}}
+							<option value="{{:~neotypes[#index]}}"
+								{{if ~stripType == ~neotypes[#index]}}
+									selected
+								{{/if}} >
+
+								{{:~neotypes[#index]}}
+							</option>
+						{{/for}}
+
+					</select>
                 </td>
                 <td>
                     <input name="strips[{{:~n}}][]" type="number"
@@ -68,7 +92,7 @@
                     <th>Name</th>
                     <th>Color</th>
                     <th>Start</th>
-                    <th>End</th>
+                    <th>Length</th>
                 </thead>
                 </tr>
                 <tbody>
@@ -104,7 +128,9 @@
                     </td>
                     <td>
                         <input name="strips[{{:~n}}][5][{{:~getSliceIndex(#index)}}][]"
-							type="color" class="form-control"
+							type="color"
+							class="form-control input-sm"
+							style="padding:0px"
 							value="{{:~slice[1]}}" />
                     </td>
                     <td>

@@ -7,11 +7,11 @@ void LightsourceRpc::begin()
 
 void LightsourceRpc::process(ESP8266WebServer &srv)
 {
-	StaticJsonBuffer<1024> jsonBuffer;
+	StaticJsonBuffer<2048> jsonBuffer;
 	JsonObject& jsonRpcRequest = jsonBuffer.parseObject(srv.arg(0));
 	DBG("LightsourceRpc::process>\n");
 	jsonRpcRequest.prettyPrintTo(Serial);
-
+	DBG("\n");
 	if (strcmp(jsonRpcRequest["method"], "lightsource.init") == 0)
 		srv.send(200, JSON_CONTENT_TYPE, init(jsonRpcRequest));
  	if (strcmp(jsonRpcRequest["method"], "lightsource.testProgram") == 0)
@@ -45,7 +45,8 @@ String LightsourceRpc::testProgram(JsonObject &request)
 {
 	DBG("> LightsourceRpc::testProgram\n");
 	request.printTo(Serial);
-	if (lightsourceStrips.applyConfig((const JsonVariant &)request["params"]))
+	DBG("\n");
+	if (lightsourceStrips.applyProgram((const JsonVariant &)request["params"][0]))
 		return (success(request["id"]));
 	else
 		return (error(request["id"], -4, "Can't test program"));
@@ -63,7 +64,21 @@ String LightsourceRpc::programList(JsonObject &request)
 
 String LightsourceRpc::writeProgram(JsonObject &request)
 {
-	return (success(request["id"]));
+	DBG("> writeProgram\n");
+
+	if (request["params"].size() == 2)
+	{
+		String programName = request["params"][0];
+		JsonObject &program = request["params"][1];
+		DBG("\t> program name: \"%s\"", programName.c_str());
+
+		if (lightsourceStrips.updateProgram(program, programName))
+			return success(request["id"]);
+		else
+			return error(request["id"], -4, "Can't write program");
+	}
+
+	return (error(request["id"], -5, "Not enough parameters"));
 }
 
 String LightsourceRpc::success(int id, String response)

@@ -24,14 +24,7 @@ if ($json["method"] == "lightsource.init")
 }
 else if ($json["method"] == "lightsource.programList")
 {
-	$programs = json_decode(file_get_contents("/data/devel/lightsource/html/programs.json"));
-	$ret = array();
-	foreach ($programs as $p)
-	{
-		$ret[] = $p[0];
-	}
-
-    printf ('{"jsonrpc": "2.0", "id": "1", "result":%s}', json_encode($ret));
+    printf ('{"jsonrpc": "2.0", "id": "1", "result":%s}', file_get_contents("/data/devel/lightsource/html/programs.json"));
 }
 else
 {

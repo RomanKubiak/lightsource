@@ -11,17 +11,32 @@
 #define STRIP_TYPE	3
 #define STRIP_LEN	4
 
+/*
+static const uint8_t D0   = 16;
+static const uint8_t D1   = 5;
+static const uint8_t D2   = 4;
+static const uint8_t D3   = 0;
+static const uint8_t D4   = 2;
+static const uint8_t D5   = 14;
+static const uint8_t D6   = 12;
+static const uint8_t D7   = 13;
+static const uint8_t D8   = 15;
+static const uint8_t D9   = 3;
+static const uint8_t D10  = 1;
+*/
 class LightsourceStrips
 {
 	public:
     	LightsourceStrips(){}
     	~LightsourceStrips(){}
     	void begin();
-		bool applyConfig(String path);
-		bool applyConfig(const JsonVariant &programData);
+		bool loadProgram(String path);
+		bool applyProgram(const JsonArray &programData);
 		bool updateProgram(JsonObject &programData, String programName="default");
 
 	private:
+		bool setState(const JsonArray &jsonConfig);
+		void setSlices(Adafruit_NeoPixel &strip, const JsonArray &jsonConfig);
 		static String getFileForProgram(const String &programName);
     	Adafruit_NeoPixel pixelStrips[6];
 };
