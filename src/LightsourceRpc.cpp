@@ -7,10 +7,10 @@ void LightsourceRpc::begin()
 
 void LightsourceRpc::process(ESP8266WebServer &srv)
 {
-	StaticJsonBuffer<2048> jsonBuffer;
+	DynamicJsonBuffer jsonBuffer;
 	JsonObject& jsonRpcRequest = jsonBuffer.parseObject(srv.arg(0));
 	DBG("LightsourceRpc::process>\n");
-	jsonRpcRequest.prettyPrintTo(Serial);
+	jsonRpcRequest.printTo(Serial);
 	DBG("\n");
 	if (strcmp(jsonRpcRequest["method"], "lightsource.init") == 0)
 		srv.send(200, JSON_CONTENT_TYPE, init(jsonRpcRequest));
@@ -31,7 +31,9 @@ String LightsourceRpc::init(JsonObject &request)
 	if (request["params"].size() <= 0)
 		configString = getFileContents("/default.json");
 	else if (request["params"].size() == 1)
-		configString = getFileContents(_STR("/")+_STR((const char *)request["params"][0])+_STR(".json"));
+	{
+		configString = getFileContents(lightsourceStrips.getFileForProgram(request["params"][PROGRAM_NAME]));
+	}
 	else
 		return (error(request["id"], -3, "Invalid number of request parameters"));
 
@@ -46,7 +48,8 @@ String LightsourceRpc::testProgram(JsonObject &request)
 	DBG("> LightsourceRpc::testProgram\n");
 	request.printTo(Serial);
 	DBG("\n");
-	if (lightsourceStrips.applyProgram((const JsonVariant &)request["params"][0]))
+
+	if (lightsourceStrips.setState(request["params"]))
 		return (success(request["id"]));
 	else
 		return (error(request["id"], -4, "Can't test program"));
@@ -64,20 +67,23 @@ String LightsourceRpc::programList(JsonObject &request)
 
 String LightsourceRpc::writeProgram(JsonObject &request)
 {
-	DBG("> writeProgram\n");
+	DBG("> LightsourceRpc::writeProgram\n");
 
 	if (request["params"].size() == 2)
 	{
-		String programName = request["params"][0];
-		JsonObject &program = request["params"][1];
-		DBG("\t> program name: \"%s\"", programName.c_str());
-
-		if (lightsourceStrips.updateProgram(program, programName))
+		if (lightsourceStrips.updateProgram(request["params"]))
+		{
+			DBG("> LightsourceRpc::writeProgram succeeded\n");
 			return success(request["id"]);
+		}
 		else
+		{
+			DBG("> LightsourceRpc::writeProgram failed\n");
 			return error(request["id"], -4, "Can't write program");
+		}
 	}
 
+	DBG("> LightsourceRpc::writeProgram not enough parameters\n");
 	return (error(request["id"], -5, "Not enough parameters"));
 }
 

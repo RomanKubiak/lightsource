@@ -11,6 +11,9 @@
 #define STRIP_TYPE	3
 #define STRIP_LEN	4
 
+#define PROGRAM_NAME 0
+#define PROGRAM_DATA 1
+
 /*
 static const uint8_t D0   = 16;
 static const uint8_t D1   = 5;
@@ -31,13 +34,13 @@ class LightsourceStrips
     	~LightsourceStrips(){}
     	void begin();
 		bool loadProgram(String path);
-		bool applyProgram(const JsonArray &programData);
-		bool updateProgram(JsonObject &programData, String programName="default");
-
-	private:
 		bool setState(const JsonArray &jsonConfig);
+		bool updateProgram(const JsonArray &programData);
+		String getFileForProgram(const String &programName);
+	private:
 		void setSlices(Adafruit_NeoPixel &strip, const JsonArray &jsonConfig);
-		static String getFileForProgram(const String &programName);
-    	Adafruit_NeoPixel pixelStrips[6];
+
+		void updateProgramsFile(const JsonArray &programs);
+    	Adafruit_NeoPixel pixelStrips[10];
 };
 #endif

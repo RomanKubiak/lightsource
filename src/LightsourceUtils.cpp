@@ -34,34 +34,54 @@ String getFileContents(String path)
   return (allData);
 }
 
-bool writeFileWithContents(String filename, String contents)
+bool writeFileWithContents(const String fileName, const String &contentAsString)
 {
-	DBG("> writeFileWithContents file:%s contents:\n%s\n", filename.c_str(), contents.c_str());
-	File file = SPIFFS.open(filename.c_str(), "w");
-	if (!file)
+	DBG("> writeFileWithContents file:%s contents:\n%s\n",
+		fileName.c_str(),
+		contentAsString.c_str());
+
+	if (!SPIFFS.begin())
 	{
-		DBG("\n\t> writeFileWithContents open() failed");
+		DBG("> writeFileWithContents SPIFFS.begin failed\n");
 		return (false);
 	}
-	file.write((uint8_t *)contents.c_str(), contents.length());
-	file.close();
-	return (true);
+
+	File file = SPIFFS.open(fileName.c_str(), "w");
+	if (file)
+	{
+		DBG("> writeFileWithContents open() success\n");
+		const size_t ret = file.write((uint8_t *)contentAsString.c_str(), contentAsString.length());
+		DBG("> writeFileWithContents write returns %d\n", ret);
+		if (ret != contentAsString.length())
+		{
+			DBG("> writeFileWithContents return value from write does not match the content length %d != %d",
+				ret, contentAsString.length());
+		}
+		DBG("> writeFileWithContents close\n");
+		file.close();
+		DBG("> writeFileWithContents get out of funcion\n");
+		return (true);
+	}
+	return (false);
 }
 
-bool writeFileWithContents(String file, JsonObject &contents)
+bool writeFileWithContents(const String fileName, const JsonArray &contents)
 {
 	String contentAsString;
 	contents.printTo(contentAsString);
-	return (writeFileWithContents(file, contents));
+	DBG("> writeFileWithContents(json) file:%s contents:\n%s\n",
+		fileName.c_str(),
+		contentAsString.c_str());
+	return (writeFileWithContents(fileName, contentAsString));
 }
 
-String getNewUniqueFilename()
+String getNewUniqueFilename(const String &extension)
 {
-	uint8_t uuidBuffer[16];
+	uint8_t uuidBuffer[4];
 	String newFileName;
 	uuid(uuidBuffer);
-	newFileName = uuidToString(uuidBuffer);
-	DBG("> getNewUniqueFilename %s", newFileName.c_str());
+	newFileName = "/" + uuidToString(uuidBuffer) + extension;
+	DBG("> getNewUniqueFilename %s\n", newFileName.c_str());
 	return (newFileName);
 }
 
@@ -135,17 +155,18 @@ void sendNTPpacket(IPAddress &address)
 void updateStatusDisplay()
 {
 	char buf[64];
-	display.setFont(Orbitron_Light_8);
-	sprintf(buf, "%s\0", ip2str(WiFi.localIP()).c_str());
+	display.setFont(Droid_Sans_Mono_8);
+	sprintf(buf, "%s\0",
+		ip2str(WiFi.localIP()).c_str());
 	display.drawString(0,0,buf);
 }
 
 void updateClockDisplay()
 {
 	char buf[64];
-	sprintf(buf, "%02d.%02d %02d:%02d:%02d", day(), month(), hour(), minute(), second());
-	display.setFont(Orbitron_Light_12);
-	display.drawString(8,24,buf);
+	sprintf(buf, "%02d:%02d:%02d", hour(), minute(), second());
+	display.setFont(Droid_Sans_Mono_8);
+	display.drawString(80,0,buf);
 }
 
 int getTypeFromString(String type)
@@ -216,21 +237,17 @@ void memfill(char* location, int size)
 
 void uuid(uint8_t* uuidLocation) {
   // Generate a Version 4 UUID according to RFC4122
-  memfill((char*)uuidLocation,16);
+  memfill((char*)uuidLocation,4);
   // Although the UUID contains 128 bits, only 122 of those are random.
   // The other 6 bits are fixed, to indicate a version number.
-  uuidLocation[6] = 0x40 | (0x0F & uuidLocation[6]);
-  uuidLocation[8] = 0x80 | (0x3F & uuidLocation[8]);
+  //uuidLocation[6] = 0x40 | (0x0F & uuidLocation[6]);
+  //uuidLocation[8] = 0x80 | (0x3F & uuidLocation[8]);
 }
 
 String uuidToString(uint8_t* uuidLocation) {
   String string = "";
   int i;
-  for (i=0; i<16; i++) {
-    if (i==4) string += "-";
-    if (i==6) string += "-";
-    if (i==8) string += "-";
-    if (i==10) string += "-";
+  for (i=0; i<4; i++) {
     int topDigit = uuidLocation[i] >> 4;
     int bottomDigit = uuidLocation[i] & 0x0f;
     // High hex digit

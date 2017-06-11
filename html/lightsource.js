@@ -14,22 +14,28 @@ var ESPPINS = { "D0":16, "D1":5,
 
 $(document).ready(function ()
 {
+	$("#lightsource-loader").hide();
+
     stripTemplate                   = $.templates("#lightsource-strip-template");
     sliceTemplate                   = $.templates("#lightsource-slice-template");
     $.templates("lightsource-slice-template", "#lightsource-slice-template");
 
-    $(".lightsource-test-program").click(function (e){
-		console.log($('form#lightsource-config-form').serializeObject().strips);
+    $(".lightsource-test-program").click(function (e)
+	{
+		$("#lightsource-loader").show();
         $.jsonRPC.request("testProgram",
             {
-                params:[$('form#lightsource-config-form').serializeObject().strips],
+				params: [ $("#currentProgramName").val(),
+				$('form#lightsource-config-form').serializeObject().strips ],
                 success: testProgramSuccess,
                 error: testProgramError
             }
         );
     });
 
-	$(".lightsource-write-program").click(function (e){
+	$(".lightsource-write-program").click(function (e)
+	{
+		$("#lightsource-loader").show();
 		$.jsonRPC.request("writeProgram",
             {
                 params: [ $("#currentProgramName").val(),
@@ -45,18 +51,31 @@ $(document).ready(function ()
     	namespace: "lightsource"
 	});
 
+	lightsourceInit();
+	lightsourceProgramList();
+});
+
+function lightsourceInit()
+{
+	$("#lightsource-loader").show();
+
 	$.jsonRPC.request("init",
 	{
 		success: programReceived,
 		error: programReceptionError
 	});
+}
+
+function lightsourceProgramList()
+{
+	$("#lightsource-loader").show();
 
 	$.jsonRPC.request("programList",
 	{
 		success: programListReceived,
 		error: programListReceptionError
 	});
-});
+}
 
 function addStrip(e)
 {
@@ -112,6 +131,8 @@ function createEmptyStrip()
 
 function renderStripsTable(strips)
 {
+	$("#lightsource-config-form").empty();
+
     for (n=0; n<strips.length; n++)
     {
         var helper =
@@ -131,6 +152,7 @@ function renderStripsTable(strips)
 function lightsourceError(message)
 {
 	console.log(message);
+	$("#lightsource-loader").hide();
 	$("#lightsource-notifier").attr("class", "label label-danger");
 	$("#lightsource-notifier").html(message);
 	$("#lightsource-notifier").show();
@@ -140,6 +162,7 @@ function lightsourceError(message)
 function lightsourceNotify(message)
 {
 	console.log(message);
+	$("#lightsource-loader").hide();
 	$("#lightsource-notifier").attr("class", "label label-success");
 	$("#lightsource-notifier").html(message);
 	$("#lightsource-notifier").show();

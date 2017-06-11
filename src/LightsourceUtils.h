@@ -13,6 +13,7 @@
 #include <WiFiUdp.h>
 #include <FS.h>
 #include <Adafruit_NeoPixel.h>
+#include <clickButton.h>
 #include "font_roboto.h"
 
 #define NTP_UDP_LOCAL_PORT	2390
@@ -23,9 +24,9 @@
 #define _STR(x)				String(x)
 
 String getFileContents(String path);
-bool writeFileWithContents(String file, String contents);
-bool writeFileWithContents(String file, JsonObject& contents);
-String getNewUniqueFilename();
+bool writeFileWithContents(const String fileName, const String &contents);
+bool writeFileWithContents(const String fileName, const JsonArray &contents);
+String getNewUniqueFilename(const String &extension=".json");
 void dbg(const char *fmt, ...);
 String ip2str(const IPAddress& ipAddress);
 void updateClockDisplay();
@@ -35,7 +36,6 @@ time_t getNtpTime();
 String formatBytes(size_t bytes);
 int getTypeFromString(String type);
 long long getColorFromHexString(const char *hexString);
-
 void uuid(uint8_t* uuidLocation);
 void memfill(char* location, int size);
 char randomByte(void);
