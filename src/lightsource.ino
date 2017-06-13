@@ -1,20 +1,20 @@
 #include <Arduino.h>
-
 #include "LightsourceUtils.h"
 #include "LightsourceHTTPHandlers.h"
+#include "LightsourceDisplay.h"
+#include <queue>
+#include "images.h"
 
 const char* ssid = "FAST3764-ED38";
 const char* password = "54dkl182";
 
 WiFiUDP Udp;
 Ticker ntp;
-SH1106 display(0x3c, D3, D5);
 extern ESP8266WebServer httpServer;
 extern ESP8266HTTPUpdateServer httpUpdater;
-time_t prevDisplay = 0; // when the digital clock was displayed
-int function = 0;
 LightsourceRpc lightsourceRpc;
 LightsourceStrips lightsourceStrips;
+LightsourceDisplay lightsourceDisplay;
 ClickButton button1(A0, HIGH);
 
 /*
@@ -24,25 +24,13 @@ void setup(void){
   DBG_OUTPUT_PORT.begin(115200);
   delay(50);
   DBG("\n\n> starting\n");
-  DBG("> display init\n");
-  display.init();
-  display.flipScreenVertically();
-  display.setFont(Droid_Sans_Mono_12);
-  display.clear();
-  display.setTextAlignment(TEXT_ALIGN_LEFT);
+  DBG("> display\n");
+  lightsourceDisplay.init();
   DBG("> wifi init\n");
   WiFi.begin(ssid, password);
   bool blink = true;
   while (WiFi.status() != WL_CONNECTED)
   {
-    display.clear();
-    display.drawString(0, 0, "->" + String(ssid));
-    if (blink)
-      display.drawString(48,26, "-.-");
-    else
-      display.drawString(48,26, "#.#");
-    blink = !blink;
-    display.display();
     DBG(".");
     delay(250);
   }
@@ -72,9 +60,6 @@ void setup(void){
   	button1.longClickTime  = 1000; // time until "held-down clicks" register
 	DBG("> main program start\n");
 	lightsourceRpc.begin();
-	display.clear();
-    updateStatusDisplay();
-	display.display();
 	delay(500);
 	lightsourceStrips.begin();
 }
@@ -85,25 +70,16 @@ void setup(void){
 void loop(void)
 {
   	httpServer.handleClient();
-  	if (timeStatus() != timeNotSet)
-	{
-    	if (now() != prevDisplay)
-		{
-      		prevDisplay = now();
-      		display.clear();
-      		updateStatusDisplay();
-      		updateClockDisplay();
-      		display.display();
-    	}
-  	}
-
 	button1.Update();
 	if(button1.clicks != 0)
 	{
-		function = button1.clicks;
-		DBG("> clicks: %d\n", function);
-		function = 0;
+		if (button1.clicks == 1)
+			lightsourceDisplay.next();
+		if (button1.clicks == 2)
+			lightsourceDisplay.previous();
+		if (button1.clicks == -1)
+				lightsourceDisplay.confirm();
 	}
-
+	lightsourceDisplay.update();
 	delay(5);
 }

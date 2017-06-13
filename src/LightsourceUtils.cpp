@@ -1,11 +1,15 @@
 #include "LightsourceUtils.h"
 
 extern WiFiUDP Udp;
-extern SH1106 display;
 IPAddress ntpTimeServer(194,146,251,100);
 byte ntpPacketBuffer[NTP_PACKET_SIZE];
 unsigned long lastNtpUpdateInMillis, epoch;
 static int lastYield = 0;
+extern uint8_t logBuffer_buf[256];
+
+void dbg(const char *fmt, ...)
+{
+}
 
 String getFileContents(String path)
 {
@@ -150,23 +154,6 @@ void sendNTPpacket(IPAddress &address)
   Udp.beginPacket(address, 123); //NTP requests are to port 123
   Udp.write(ntpPacketBuffer, NTP_PACKET_SIZE);
   Udp.endPacket();
-}
-
-void updateStatusDisplay()
-{
-	char buf[64];
-	display.setFont(Droid_Sans_Mono_8);
-	sprintf(buf, "%s\0",
-		ip2str(WiFi.localIP()).c_str());
-	display.drawString(0,0,buf);
-}
-
-void updateClockDisplay()
-{
-	char buf[64];
-	sprintf(buf, "%02d:%02d:%02d", hour(), minute(), second());
-	display.setFont(Droid_Sans_Mono_8);
-	display.drawString(80,0,buf);
 }
 
 int getTypeFromString(String type)
