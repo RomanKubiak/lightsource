@@ -29,23 +29,11 @@ void setup(void){
   DBG("> wifi init\n");
   WiFi.begin(ssid, password);
   bool blink = true;
-  byte wifiCheck = 0;
+  uint16_t wifiCheck = 0;
 
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    DBG(".");
-    delay(50);
-    wifiCheck++;
+  lightsourceDisplay.showLoadingScreen();
 
-    if (wifiCheck == 600)
-    {
-      /* we waited for 30 seconds, give up */
-      wifOk = false;
-      break;
-    }
-  }
-  DBG("\n");
-  if (wifOk)
+  if (WiFi.status() == WL_CONNECTED)
   {
     DBG("> connected to ssid: \"%s\" ip: %s\n", ssid, ip2str(WiFi.localIP()).c_str());
     registerHTTPHandlers();
@@ -56,7 +44,7 @@ void setup(void){
   {
     DBG("> wifi connect timed out after 30 seconds\n");
   }
-  
+
   DBG("> init spiffs, all files:\n");
   SPIFFS.begin();
   {
