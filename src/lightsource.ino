@@ -16,7 +16,7 @@ LightsourceRpc lightsourceRpc;
 LightsourceStrips lightsourceStrips;
 LightsourceDisplay lightsourceDisplay;
 ClickButton button1(A0, HIGH);
-
+bool wifOk;
 /*
  *  MAIN PROGRAM
  */
@@ -29,17 +29,34 @@ void setup(void){
   DBG("> wifi init\n");
   WiFi.begin(ssid, password);
   bool blink = true;
+  byte wifiCheck = 0;
+
   while (WiFi.status() != WL_CONNECTED)
   {
     DBG(".");
-    delay(250);
+    delay(50);
+    wifiCheck++;
+
+    if (wifiCheck == 600)
+    {
+      /* we waited for 30 seconds, give up */
+      wifOk = false;
+      break;
+    }
   }
   DBG("\n");
-  DBG("> connected to ssid: \"%s\" ip: %s\n", ssid, ip2str(WiFi.localIP()).c_str());
-  registerHTTPHandlers();
-  DBG("> start web server\n");
-  httpServer.begin();
-
+  if (wifOk)
+  {
+    DBG("> connected to ssid: \"%s\" ip: %s\n", ssid, ip2str(WiFi.localIP()).c_str());
+    registerHTTPHandlers();
+    DBG("> start web server\n");
+    httpServer.begin();
+  }
+  else
+  {
+    DBG("> wifi connect timed out after 30 seconds\n");
+  }
+  
   DBG("> init spiffs, all files:\n");
   SPIFFS.begin();
   {
